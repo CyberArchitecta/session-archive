@@ -19,6 +19,8 @@ Separate from [Agent Relay](https://github.com/CyberArchitecta/claude-codex-rela
 
 **Imports are snapshots, not continuous synchronization.** MCP does not export private histories from either app. Import again to include later messages. Actual ChatGPT/Claude app connection acceptance has not been verified; protocol tests use the official MCP SDK client.
 
+For Codex/Claude Code users: [step-by-step local installation](docs/local-install.md) and [practical handoff assessment](docs/practical-handoff.md). Native coding-session ingestion and live workspace inspection are not implemented in v0.1.0.
+
 ## Quick start
 
 Requires **Node.js 24.13 or newer**.
