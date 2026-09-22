@@ -1,0 +1,83 @@
+"""Real browser workflow using only synthetic exports. No model inference."""
+import json, subprocess
+from pathlib import Path
+from playwright.sync_api import sync_playwright, expect
+ROOT = Path(__file__).resolve().parents[1]
+server = subprocess.Popen(["node", "scripts/ui-fixture.mjs"], cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+try:
+    boot = json.loads(server.stdout.readline())
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        context = browser.new_context(permissions=["clipboard-read", "clipboard-write"], viewport={"width":1440,"height":1050})
+        page = context.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.goto(boot["url"])
+        expect(page.get_by_role("heading", name="One conversation. A different assistant.")).to_be_visible()
+        for source in ("chatgpt", "claude"):
+            page.locator("#import-file").set_input_files(str(ROOT / "examples" / (source + ".json")))
+            expect(page.locator("#status")).to_contain_text("added")
+            expect(page.locator(".session")).to_have_count(1 if source == "chatgpt" else 2)
+        page.locator(".session").filter(has_text="chatgpt").click()
+        expect(page.locator("#title")).to_have_text("Garden studio plan")
+        page.locator("#notes").fill("Decision: keep timber. Next: request foundation quote.")
+        page.locator("#save-notes").click()
+        expect(page.locator("#status")).to_have_text("Notes saved.")
+        expect(page.locator("#packet")).to_contain_text("request foundation quote")
+        page.locator("#copy").click()
+        expect(page.locator("#status")).to_contain_text("Handoff copied")
+        assert "request foundation quote" in page.evaluate("navigator.clipboard.readText()")
+        with page.expect_download() as download:
+            page.locator("#download").click()
+        assert "request foundation quote" in Path(download.value.path()).read_text()
+        page.locator("#budget").select_option("3000")
+        expect(page.locator("#packet")).to_contain_text("request foundation quote")
+        page.locator("#attach-file").set_input_files({"name":"quote.txt","mimeType":"text/plain","buffer":b"Quote: 7300 EUR. Reference GARDEN-42"})
+        expect(page.locator("#status")).to_have_text("Text attachment imported.")
+        page.get_by_role("button", name="quote.txt /").click()
+        expect(page.locator("#file-preview")).to_contain_text("7300")
+        page.locator("#transcript-section summary").click()
+        expect(page.locator("#transcript")).to_contain_text("green roof")
+        page.locator("#search").fill("GARDEN-42")
+        expect(page.locator(".session")).to_have_count(1)
+        page.reload()
+        expect(page.locator("#notes")).to_have_value("Decision: keep timber. Next: request foundation quote.")
+        page.locator("#notes").fill("Unsaved")
+        dismiss_dialog = lambda dialog: dialog.dismiss()
+        page.on("dialog", dismiss_dialog)
+        page.locator(".session").filter(has_text="claude").click()
+        expect(page.locator("#source")).to_have_text("chatgpt")
+        page.locator("#notes").fill("Decision: keep timber. Next: request foundation quote.")
+        page.locator("#save-notes").click()
+        expect(page.locator("#status")).to_have_text("Notes saved.")
+        page.locator(".session").filter(has_text="claude").click()
+        expect(page.locator("#source")).to_have_text("claude")
+        expect(page.locator("#packet")).to_contain_text("drainage")
+        # Imported markup is plain text, never executable HTML.
+        page.locator("#import-file").set_input_files({"name":"injection.md","mimeType":"text/markdown","buffer":b"# <img src=x onerror=alert(1)>\n<script>alert('bad')</script>"})
+        expect(page.locator(".session")).to_have_count(3)
+        page.locator(".session").filter(has_text="<img").click()
+        expect(page.locator("#title")).to_have_text("<img src=x onerror=alert(1)>")
+        assert page.locator("#detail img, #detail script").count() == 0
+        page.locator("#connection-help").click()
+        expect(page.locator("#connections")).to_be_visible()
+        page.get_by_role("button", name="Close", exact=True).click()
+        page.remove_listener("dialog", dismiss_dialog)
+        page.on("dialog", lambda dialog: dialog.accept())
+        page.locator("#delete").click()
+        expect(page.locator(".session")).to_have_count(2)
+        page.locator(".session").filter(has_text="chatgpt").click()
+        (ROOT / "scratch").mkdir(exist_ok=True)
+        page.screenshot(path=str(ROOT / "scratch" / "desktop.png"), full_page=True)
+        page.set_viewport_size({"width":390,"height":844})
+        page.screenshot(path=str(ROOT / "scratch" / "mobile.png"), full_page=True)
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        assert not errors, errors
+        browser.close()
+    print("Browser workflow passed: import, disambiguation, notes, copy, files, search, reload, drafts, XSS, desktop/mobile.")
+finally:
+    server.stdin.close()
+    try: server.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        server.terminate()
+        server.wait(timeout=10)

@@ -1,0 +1,76 @@
+[
+  {
+    "id": "demo-chatgpt",
+    "title": "Garden studio plan",
+    "create_time": 1727000000,
+    "update_time": 1727000600,
+    "current_node": "a",
+    "mapping": {
+      "root": {
+        "id": "root",
+        "parent": null,
+        "children": [
+          "u"
+        ],
+        "message": null
+      },
+      "u": {
+        "id": "u",
+        "parent": "root",
+        "children": [
+          "a",
+          "other"
+        ],
+        "message": {
+          "author": {
+            "role": "user"
+          },
+          "create_time": 1727000000,
+          "content": {
+            "parts": [
+              "Let's design a garden studio. Budget is 8000 EUR."
+            ]
+          }
+        }
+      },
+      "a": {
+        "id": "a",
+        "parent": "u",
+        "children": [],
+        "message": {
+          "author": {
+            "role": "assistant"
+          },
+          "create_time": 1727000600,
+          "content": {
+            "parts": [
+              "We chose timber framing and a green roof. Next: confirm the foundation dimensions and request quotes."
+            ]
+          },
+          "metadata": {
+            "attachments": [
+              {
+                "name": "floor-plan.png"
+              }
+            ]
+          }
+        }
+      },
+      "other": {
+        "id": "other",
+        "parent": "u",
+        "children": [],
+        "message": {
+          "author": {
+            "role": "assistant"
+          },
+          "content": {
+            "parts": [
+              "Alternative branch: steel framing."
+            ]
+          }
+        }
+      }
+    }
+  }
+]

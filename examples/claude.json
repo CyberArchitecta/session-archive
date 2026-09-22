@@ -1,0 +1,25 @@
+[
+  {
+    "uuid": "demo-claude",
+    "name": "Garden studio plan",
+    "created_at": "2024-09-23T10:00:00Z",
+    "updated_at": "2024-09-23T10:10:00Z",
+    "chat_messages": [
+      {
+        "sender": "human",
+        "text": "Continue the timber garden studio. Check the roof drainage.",
+        "created_at": "2024-09-23T10:00:00Z"
+      },
+      {
+        "sender": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Use a slight roof slope and verify local rainfall requirements. Outstanding: drainage outlet position and contractor quote."
+          }
+        ],
+        "created_at": "2024-09-23T10:10:00Z"
+      }
+    ]
+  }
+]

@@ -1,0 +1,7 @@
+node_modules/
+scratch/
+data/
+*.sqlite*
+.env
+*.tgz
+__pycache__/

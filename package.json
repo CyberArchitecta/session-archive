@@ -1,0 +1,37 @@
+{
+  "name": "@cyberarchitecta/session-archive",
+  "version": "0.1.0",
+  "description": "Search your ChatGPT and Claude exports and carry context between assistants.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "bin": {
+    "session-archive": "bin/session-archive.mjs"
+  },
+  "scripts": {
+    "start": "node bin/session-archive.mjs serve",
+    "test": "node --test",
+    "check": "node scripts/check.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "public",
+    "README.md",
+    "LICENSE",
+    "docs",
+    "examples",
+    "SECURITY.md"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "express": "^5.1.0",
+    "zod": "^3.25.76"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CyberArchitecta/session-archive.git"
+  }
+}
